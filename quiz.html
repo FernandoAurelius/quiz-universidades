@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz de Acesso ao Ensino Superior</title>
+  <!-- Importação do Vue.js via CDN -->
+  <script src="https://unpkg.com/vue@3"></script>
+  <!-- Importação do Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Estilos para a transição do Vue -->
+  <style>
+    /* Efeito de fade para as transições */
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.5s ease;
+    }
+    .fade-enter-from, .fade-leave-to {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 flex items-center h-screen">
+  <div id="app" class="max-w-xl mx-auto p-6 mt-10 bg-white rounded shadow">
+    <h1 class="text-3xl font-bold mb-6 text-center animate-bounce">
+      Quiz de Acesso ao Ensino Superior
+    </h1>
+    
+    <!-- Componente de transição para alternar entre perguntas e resultado -->
+    <transition name="fade" mode="out-in">
+      <!-- Se ainda houver perguntas, exibe a pergunta atual -->
+      <div v-if="currentQuestionIndex < questions.length" key="question">
+        <div class="mb-4">
+          <p class="text-xl font-medium">
+            Pergunta {{ currentQuestionIndex + 1 }} de {{ questions.length }}:
+          </p>
+          <p class="mt-2 text-lg">{{ currentQuestion.question }}</p>
+        </div>
+        <div>
+          <ul>
+            <li v-for="(option, index) in currentQuestion.options" :key="index" class="mb-2">
+              <button
+                @click="handleAnswer(option, $event)"
+                class="w-full p-3 bg-blue-500 text-white rounded transition transform duration-300 hover:scale-105 active:scale-95">
+                {{ option }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <!-- Quando o quiz terminar, exibe o resultado final -->
+      <div v-else key="result" class="text-center">
+        <p class="text-2xl font-bold animate-pulse">Quiz finalizado!</p>
+        <p class="mt-4 text-xl">Você acertou {{ score }} de {{ questions.length }} perguntas.</p>
+        <button
+          @click="restartQuiz"
+          class="mt-6 p-3 bg-green-500 text-white rounded transition transform duration-300 hover:scale-105 active:scale-95">
+          Reiniciar Quiz
+        </button>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          currentQuestionIndex: 0,
+          score: 0,
+          questions: [
+            {
+              question: "Qual é o principal critério utilizado pelo SISU para selecionar os candidatos?",
+              options: ["Nota do ENEM", "Histórico escolar", "Entrevista", "Redação exclusiva"],
+              answer: "Nota do ENEM"
+            },
+            {
+              question: "Em qual programa os estudantes podem obter bolsas de estudo em instituições privadas?",
+              options: ["FIES", "SISU", "PROUNI", "Todos os programas"],
+              answer: "PROUNI"
+            },
+            {
+              question: "Qual é o objetivo principal do FIES?",
+              options: [
+                "Selecionar estudantes para universidades públicas",
+                "Oferecer bolsas integrais em instituições privadas",
+                "Financiar a educação dos estudantes",
+                "Realizar concursos culturais"
+              ],
+              answer: "Financiar a educação dos estudantes"
+            },
+            {
+              question: "Qual destes programas utiliza financiamento estudantil?",
+              options: ["PROUNI", "SISU", "FIES", "Nenhum dos anteriores"],
+              answer: "FIES"
+            },
+            {
+              question: "Qual programa é destinado a toda a população de candidatos com bom desempenho no ENEM?",
+              options: ["SISU", "PROUNI", "FIES", "Todos os anteriores"],
+              answer: "SISU"
+            }
+          ]
+        }
+      },
+      computed: {
+        currentQuestion() {
+          return this.questions[this.currentQuestionIndex];
+        }
+      },
+      methods: {
+        // Adiciona efeito de animação ao clicar e depois processa a resposta
+        handleAnswer(option, event) {
+          const btn = event.currentTarget;
+          btn.classList.add('animate-pulse');
+          setTimeout(() => {
+            btn.classList.remove('animate-pulse');
+            this.selectAnswer(option);
+          }, 300);
+        },
+        selectAnswer(option) {
+          if(option === this.currentQuestion.answer) {
+            this.score++;
+          }
+          this.currentQuestionIndex++;
+          localStorage.setItem('quizScore', this.score);
+        },
+        restartQuiz() {
+          this.currentQuestionIndex = 0;
+          this.score = 0;
+          localStorage.removeItem('quizScore');
+        }
+      },
+      mounted() {
+        const savedScore = localStorage.getItem('quizScore');
+        if(savedScore !== null) {
+          this.score = parseInt(savedScore);
+        }
+      }
+    });
+    app.mount('#app');
+  </script>
+</body>
+</html>
